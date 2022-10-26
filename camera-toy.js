@@ -76,9 +76,12 @@ class CameraToy extends HTMLElement {
     const points = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, points);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-      0, 0,
-      0, 1,
-      1, 0,
+      1, 1,
+      1, -1,
+      -1, 1,
+      -1, -1,
+      -1, 1,
+      1, -1,
     ]), gl.STATIC_DRAW);
 
     const vao = this.#vao = gl.createVertexArray();
@@ -106,7 +109,7 @@ class CameraToy extends HTMLElement {
 
     gl.useProgram(this.#program);
     gl.bindVertexArray(this.#vao);
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
 }
 
