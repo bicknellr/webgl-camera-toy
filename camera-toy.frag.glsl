@@ -2,9 +2,14 @@
 
 precision highp float;
 
+uniform vec2 u_streamSize;
+uniform sampler2D u_texture;
+
 in vec4 v_position;
+in vec2 v_texcoord;
+
 out vec4 fragColor;
 
 void main() {
-  fragColor = vec4(v_position.xy, 0.0, 1.0);
+  fragColor = texture(u_texture, v_texcoord / u_streamSize);
 }
