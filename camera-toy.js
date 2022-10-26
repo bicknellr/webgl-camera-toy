@@ -1,5 +1,7 @@
 class CameraToy extends HTMLElement {
+  #video = undefined;
   #canvas = undefined;
+  #ctx = undefined;
   #canvasResizeObserver = undefined;
 
   constructor() {
@@ -21,17 +23,22 @@ class CameraToy extends HTMLElement {
       <canvas id="mainCanvas"></canvas>
     `;
 
+    this.#video = document.createElement("video");
+
     this.#canvas = this.shadowRoot.getElementById("mainCanvas");
+    this.#canvas.addEventListener("click", () => { this.#start(); });
+
+    this.#ctx = this.#canvas.getContext("2d");
+
     this.#canvasResizeObserver = new ResizeObserver((entries) => {
       const entry = entries.findLast(entry => entry.target === this.#canvas);
       if (entry) {
         const contentRect = entry.contentRect;
         this.#resizeCanvas(contentRect.width, contentRect.height);
+        this.#renderFrame();
       }
     });
     this.#canvasResizeObserver.observe(this.#canvas);
-
-    this.#canvas.addEventListener("click", () => { this.#start(); });
   }
 
   #resizeCanvas(width, height) {
@@ -47,17 +54,18 @@ class CameraToy extends HTMLElement {
       },
     });
 
-    const video = document.createElement("video");
-    video.srcObject = stream;
-    video.play();
-
-    const ctx = this.#canvas.getContext("2d");
+    this.#video.srcObject = stream;
+    this.#video.play();
 
     const frame = () => {
-      ctx.drawImage(video, 0, 0);
+      this.#renderFrame();
       requestAnimationFrame(frame);
     };
     requestAnimationFrame(frame);
+  }
+
+  #renderFrame() {
+    this.#ctx.drawImage(this.#video, 0, 0);
   }
 }
 
