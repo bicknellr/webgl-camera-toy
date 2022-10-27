@@ -12,7 +12,9 @@ class CameraToy extends HTMLElement {
   #program;
   #texture;
   #vao;
+
   #u_streamSize;
+  #u_flipX;
 
   #running;
 
@@ -155,7 +157,9 @@ class CameraToy extends HTMLElement {
           element.value = params.get(name) ?? element.defaultValue;
         } break;
         case "checkbox": {
-          element.checked = params.get(name) === "true";
+          if (params.has(name)) {
+            element.checked = params.get(name) === "true";
+          }
         } break;
         default: {
           throw new Error("Unrecognized setting element type.");
@@ -192,6 +196,7 @@ class CameraToy extends HTMLElement {
     });
 
     this.#u_streamSize = gl.getUniformLocation(program, "u_streamSize");
+    this.#u_flipX = gl.getUniformLocation(program, "u_flipX");
     const a_position = gl.getAttribLocation(program, "a_position");
     const a_texcoord = gl.getAttribLocation(program, "a_texcoord");
 
@@ -274,6 +279,8 @@ class CameraToy extends HTMLElement {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 
     gl.uniform2f(this.#u_streamSize, this.#video.videoWidth, this.#video.videoHeight);
+    gl.uniform1i(this.#u_flipX, Number(this.#settings.get("flipX").checked));
+
     gl.bindVertexArray(this.#vao);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
