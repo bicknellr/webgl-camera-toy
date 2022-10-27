@@ -6,6 +6,7 @@ class CameraToy extends HTMLElement {
   #video;
   #canvas;
   #canvasResizeObserver;
+  #settings;
 
   #gl;
   #program;
@@ -23,17 +24,62 @@ class CameraToy extends HTMLElement {
       <style>
         :host {
           position: relative;
+          font-family: sans-serif;
         }
 
-        canvas {
+        #mainCanvas {
           position: absolute;
           top: 0px;
           left: 0px;
           width: 100%;
           height: 100%;
         }
+
+        #settingsPane {
+          position: absolute;
+          overflow: auto;
+          box-sizing: border-box;
+          top: 1em;
+          left: 1em;
+          max-width: calc(100vw - 2em);
+          max-height: calc(100vh - 2em);
+
+          padding: 0.5em;
+          border: 2px solid #808080;
+          border-radius: 0.5em;
+          background-color: #222222;
+
+          user-select: none;
+
+          opacity: 0.25;
+          transition: opacity 0.1s;
+        }
+        #settingsPane:hover {
+          opacity: 1;
+        }
+
+        #settingsPane summary:hover {
+          cursor: pointer;
+          color: cyan;
+        }
+
+        #settingsGrid {
+          display: grid;
+          grid: 1fr / auto 1fr;
+          gap: 0.5em;
+        }
       </style>
       <canvas id="mainCanvas"></canvas>
+      <details id="settingsPane">
+        <summary>Settings</summary>
+        <hr>
+        <div id="settingsGrid">
+          <div>Some value</div>
+          <input type="range" setting-name="someValue">
+          <div>Another value</div>
+          <input type="range" setting-name="anotherValue">
+        </div>
+      </details>
     `;
 
     this.#video = document.createElement("video");
@@ -56,6 +102,46 @@ class CameraToy extends HTMLElement {
       }
     });
     this.#canvasResizeObserver.observe(this.#canvas);
+
+    this.#settings = new Map(
+      Array.from(this.shadowRoot.querySelectorAll("[setting-name]")).map(element => {
+        return [element.getAttribute("setting-name"), element];
+      })
+    );
+    this.#restoreSettings(location.search);
+  }
+
+  #settingsSaveThrottleDuration = 100;
+  #settingsSaveLastTime = 0;
+  #settingsSaveTimeoutToken = undefined;
+  #saveSettings() {
+    const lastSave = performance.now() - this.#settingsSaveLastTime;
+    if (lastSave < this.#settingsSaveThrottleDuration) {
+      if (this.#settingsSaveTimeoutToken === undefined) {
+        this.#settingsSaveTimeoutToken = setTimeout(() => {
+          this.#settingsSaveTimeoutToken = undefined;
+          this.#saveSettings();
+        }, this.#settingsSaveThrottleDuration - lastSave);
+      }
+      return;
+    }
+    this.#settingsSaveLastTime = performance.now();
+
+    const params = new URLSearchParams();
+
+    for (const [name, element] of this.#settings) {
+      params.set(name, element.value);
+    }
+
+    history.replaceState(undefined, "", "?" + params.toString());
+  }
+
+  #restoreSettings(search) {
+    const params = new URLSearchParams(search);
+
+    for (const [name, element] of this.#settings) {
+      element.value = params.get(name) ?? element.defaultValue;
+    }
   }
 
   #resizeCanvas(width, height) {
@@ -139,6 +225,7 @@ class CameraToy extends HTMLElement {
     // Loop.
     const frame = () => {
       this.#renderFrame();
+      this.#saveSettings();
       requestAnimationFrame(frame);
     };
     requestAnimationFrame(frame);
