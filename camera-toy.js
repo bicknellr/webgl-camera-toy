@@ -74,10 +74,10 @@ class CameraToy extends HTMLElement {
         <summary>Settings</summary>
         <hr>
         <div id="settingsGrid">
-          <div>Some value</div>
+          <div>Flip X</div>
+          <input type="checkbox" setting-name="flipX" checked>
+          <div>Some Value</div>
           <input type="range" setting-name="someValue">
-          <div>Another value</div>
-          <input type="range" setting-name="anotherValue">
         </div>
       </details>
     `;
@@ -130,7 +130,17 @@ class CameraToy extends HTMLElement {
     const params = new URLSearchParams();
 
     for (const [name, element] of this.#settings) {
-      params.set(name, element.value);
+      switch (element.type) {
+        case "range": {
+          params.set(name, element.value);
+        } break;
+        case "checkbox": {
+          params.set(name, element.checked);
+        } break;
+        default: {
+          throw new Error("Unrecognized setting element type.");
+        } break;
+      }
     }
 
     history.replaceState(undefined, "", "?" + params.toString());
@@ -140,7 +150,17 @@ class CameraToy extends HTMLElement {
     const params = new URLSearchParams(search);
 
     for (const [name, element] of this.#settings) {
-      element.value = params.get(name) ?? element.defaultValue;
+      switch (element.type) {
+        case "range": {
+          element.value = params.get(name) ?? element.defaultValue;
+        } break;
+        case "checkbox": {
+          element.checked = params.get(name) === "true";
+        } break;
+        default: {
+          throw new Error("Unrecognized setting element type.");
+        } break;
+      }
     }
   }
 
