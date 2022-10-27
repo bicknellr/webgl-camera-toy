@@ -15,6 +15,8 @@ class CameraToy extends HTMLElement {
 
   #u_streamSize;
   #u_flipX;
+  #u_xWaveFreq;
+  #u_xWaveAmp;
 
   #running;
 
@@ -78,8 +80,10 @@ class CameraToy extends HTMLElement {
         <div id="settingsGrid">
           <div>Flip X</div>
           <input type="checkbox" setting-name="flipX" checked>
-          <div>Some Value</div>
-          <input type="range" setting-name="someValue">
+          <div>Wave Frequency</div>
+          <input type="range" setting-name="xWaveFreq" min="0" max="100" value="10">
+          <div>Wave Amplitude</div>
+          <input type="range" setting-name="xWaveAmp" min="0" max="20" value="0">
         </div>
       </details>
     `;
@@ -197,6 +201,9 @@ class CameraToy extends HTMLElement {
 
     this.#u_streamSize = gl.getUniformLocation(program, "u_streamSize");
     this.#u_flipX = gl.getUniformLocation(program, "u_flipX");
+    this.#u_xWaveFreq = gl.getUniformLocation(program, "u_xWaveFreq");
+    this.#u_xWaveAmp = gl.getUniformLocation(program, "u_xWaveAmp");
+
     const a_position = gl.getAttribLocation(program, "a_position");
     const a_texcoord = gl.getAttribLocation(program, "a_texcoord");
 
@@ -280,6 +287,8 @@ class CameraToy extends HTMLElement {
 
     gl.uniform2f(this.#u_streamSize, this.#video.videoWidth, this.#video.videoHeight);
     gl.uniform1i(this.#u_flipX, Number(this.#settings.get("flipX").checked));
+    gl.uniform1f(this.#u_xWaveFreq, Number(this.#settings.get("xWaveFreq").value));
+    gl.uniform1f(this.#u_xWaveAmp, Number(this.#settings.get("xWaveAmp").value));
 
     gl.bindVertexArray(this.#vao);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
