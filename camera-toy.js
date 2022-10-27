@@ -75,6 +75,13 @@ class CameraToy extends HTMLElement {
           grid: 1fr / auto 1fr;
           gap: 0.5em;
         }
+
+        #startButton {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+        }
       </style>
       <canvas id="mainCanvas"></canvas>
       <details id="settingsPane">
@@ -93,16 +100,20 @@ class CameraToy extends HTMLElement {
           <input type="range" setting-name="xWaveOscFreq" min="0" max="5" value="1" step="0.001">
         </div>
       </details>
+      <button id="startButton">Click to start.</button>
     `;
 
     this.#video = document.createElement("video");
 
     this.#canvas = this.shadowRoot.getElementById("mainCanvas");
     this.#running = false;
-    this.#canvas.addEventListener("click", () => {
+
+    const startButton = this.shadowRoot.getElementById("startButton");
+    startButton.addEventListener("click", () => {
       if (!this.#running) {
         this.#running = true;
         this.#start();
+        startButton.remove();
       }
     });
 
