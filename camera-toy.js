@@ -13,10 +13,13 @@ class CameraToy extends HTMLElement {
   #texture;
   #vao;
 
+  #u_time;
   #u_streamSize;
   #u_flipX;
-  #u_xWaveFreq;
   #u_xWaveAmp;
+  #u_xWaveFreq;
+  #u_xWaveOscAmp;
+  #u_xWaveOscFreq;
 
   #running;
 
@@ -80,10 +83,14 @@ class CameraToy extends HTMLElement {
         <div id="settingsGrid">
           <div>Flip X</div>
           <input type="checkbox" setting-name="flipX" checked>
-          <div>Wave Frequency</div>
-          <input type="range" setting-name="xWaveFreq" min="0" max="100" value="10">
           <div>Wave Amplitude</div>
           <input type="range" setting-name="xWaveAmp" min="0" max="20" value="0">
+          <div>Wave Frequency</div>
+          <input type="range" setting-name="xWaveFreq" min="0" max="100" value="10">
+          <div>Wave Oscillation Amplitude</div>
+          <input type="range" setting-name="xWaveOscAmp" min="0" max="1" value="0" step="0.001">
+          <div>Wave Oscillation Frequency</div>
+          <input type="range" setting-name="xWaveOscFreq" min="0" max="5" value="1" step="0.001">
         </div>
       </details>
     `;
@@ -199,10 +206,13 @@ class CameraToy extends HTMLElement {
       fragmentSourceURL: resolve("./camera-toy.frag.glsl"),
     });
 
+    this.#u_time = gl.getUniformLocation(program, "u_time");
     this.#u_streamSize = gl.getUniformLocation(program, "u_streamSize");
     this.#u_flipX = gl.getUniformLocation(program, "u_flipX");
-    this.#u_xWaveFreq = gl.getUniformLocation(program, "u_xWaveFreq");
     this.#u_xWaveAmp = gl.getUniformLocation(program, "u_xWaveAmp");
+    this.#u_xWaveFreq = gl.getUniformLocation(program, "u_xWaveFreq");
+    this.#u_xWaveOscAmp = gl.getUniformLocation(program, "u_xWaveOscAmp");
+    this.#u_xWaveOscFreq = gl.getUniformLocation(program, "u_xWaveOscFreq");
 
     const a_position = gl.getAttribLocation(program, "a_position");
     const a_texcoord = gl.getAttribLocation(program, "a_texcoord");
@@ -285,10 +295,13 @@ class CameraToy extends HTMLElement {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 
+    gl.uniform1f(this.#u_time, performance.now());
     gl.uniform2f(this.#u_streamSize, this.#video.videoWidth, this.#video.videoHeight);
     gl.uniform1i(this.#u_flipX, Number(this.#settings.get("flipX").checked));
-    gl.uniform1f(this.#u_xWaveFreq, Number(this.#settings.get("xWaveFreq").value));
     gl.uniform1f(this.#u_xWaveAmp, Number(this.#settings.get("xWaveAmp").value));
+    gl.uniform1f(this.#u_xWaveFreq, Number(this.#settings.get("xWaveFreq").value));
+    gl.uniform1f(this.#u_xWaveOscAmp, Number(this.#settings.get("xWaveOscAmp").value));
+    gl.uniform1f(this.#u_xWaveOscFreq, Number(this.#settings.get("xWaveOscFreq").value));
 
     gl.bindVertexArray(this.#vao);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
