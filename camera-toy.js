@@ -167,6 +167,8 @@ class CameraToy extends HTMLElement {
     });
 
     this.#video = document.createElement("video");
+    // Required by Safari on iOS.
+    this.#video.playsInline = true;
 
     this.#canvas = this.shadowRoot.getElementById("mainCanvas");
     this.#running = false;
