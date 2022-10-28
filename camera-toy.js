@@ -179,7 +179,7 @@ class CameraToy extends HTMLElement {
     this.#restoreSettings(location.search);
   }
 
-  #settingsSaveThrottleDuration = 100;
+  #settingsSaveThrottleDuration = 500;
   #settingsSaveLastTime = 0;
   #settingsSaveTimeoutToken = undefined;
   #saveSettings() {
