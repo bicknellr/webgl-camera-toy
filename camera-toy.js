@@ -3,6 +3,7 @@ import {loadProgram} from "./WebGLUtilities.js";
 const resolve = (relative) => new URL(relative, import.meta.url).toString();
 
 class CameraToy extends HTMLElement {
+  #errorPane;
   #video;
   #canvas;
   #canvasResizeObserver;
@@ -82,6 +83,26 @@ class CameraToy extends HTMLElement {
           left: 50%;
           transform: translate(-50%, -50%);
         }
+
+        #errorPane {
+          overflow: auto;
+
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+
+          max-width: 80vw;
+          max-height: 80vh;
+
+          border: 2px solid #800000;
+          border-radius: 0.5em;
+          padding: 0.5em;
+
+          background-color: #200000;
+          font-family: monospace;
+          white-space: pre;
+        }
       </style>
       <canvas id="mainCanvas"></canvas>
       <details id="settingsPane">
@@ -101,7 +122,30 @@ class CameraToy extends HTMLElement {
         </div>
       </details>
       <button id="startButton">Click to start.</button>
+      <div id="errorPane" hidden><b>Reload and try again.</b><hr></div>
     `;
+
+    this.#errorPane = this.shadowRoot.getElementById("errorPane");
+    const showError = (message) => {
+      this.#errorPane.hidden = false;
+      this.#errorPane.append(new Text(message));
+    };
+    window.addEventListener("error", (e) => {
+      const {lineno, colno, message, filename, error} = e;
+      showError(
+        `Error at ${filename}:${lineno}:${colno}` +
+        `\n\n${message}` +
+        `\n\n${error.stack}`
+      );
+    });
+    window.addEventListener("unhandledrejection", (e) => {
+      const {reason} = e;
+      showError(
+        `Promise rejection at ${reason.sourceURL}:${reason.line}:${reason.column}` +
+        `\n\n${reason.message}` +
+        `\n\n${reason.stack}`
+      );
+    });
 
     this.#video = document.createElement("video");
 
