@@ -3,7 +3,6 @@ import {loadProgram} from "./WebGLUtilities.js";
 const resolve = (relative) => new URL(relative, import.meta.url).toString();
 
 class CameraToy extends HTMLElement {
-  #errorPane;
   #video;
   #canvas;
   #canvasResizeObserver;
@@ -100,6 +99,14 @@ class CameraToy extends HTMLElement {
           padding: 0.5em;
 
           background-color: #200000;
+        }
+
+        #errorPaneTitle {
+          display: flex;
+          justify-content: space-between;
+        }
+
+        #errorText {
           font-family: monospace;
           white-space: pre;
         }
@@ -122,13 +129,20 @@ class CameraToy extends HTMLElement {
         </div>
       </details>
       <button id="startButton">Click to start.</button>
-      <div id="errorPane" hidden><b>Reload and try again.</b><hr></div>
+      <div id="errorPane" hidden>
+        <div id="errorPaneTitle">
+          <b>An error occurred. Reload and try again.</b>
+          <button id="errorDismiss">Dismiss</button>
+        </div>
+        <div id="errorText"></div>
+      </div>
     `;
 
-    this.#errorPane = this.shadowRoot.getElementById("errorPane");
+    const errorPane = this.shadowRoot.getElementById("errorPane");
+    const errorText = this.shadowRoot.getElementById("errorText");
     const showError = (message) => {
-      this.#errorPane.hidden = false;
-      this.#errorPane.append(new Text(message));
+      errorPane.hidden = false;
+      errorText.append(document.createElement("hr"), new Text(message));
     };
     window.addEventListener("error", (e) => {
       const {lineno, colno, message, filename, error} = e;
@@ -145,6 +159,11 @@ class CameraToy extends HTMLElement {
         `\n\n${reason.message}` +
         `\n\n${reason.stack}`
       );
+    });
+
+    const errorDismiss = this.shadowRoot.getElementById("errorDismiss");
+    errorDismiss.addEventListener("click", () => {
+      errorPane.hidden = true;
     });
 
     this.#video = document.createElement("video");
